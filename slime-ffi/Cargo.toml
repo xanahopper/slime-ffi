@@ -6,7 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jni = { version = "0.21.0", optional = true }
+slime-ffi-rt = { path = "../slime-ffi-rt" }
+variant_count = "1.1.0"
+num_enum = "0.5.4"
 
 [features]
-jvm = ["jni"]
+jvm = ["slime-ffi-rt/jvm"]
+dart = ["slime-ffi-rt/dart"]
+android = ["slime-ffi-rt/android"]
