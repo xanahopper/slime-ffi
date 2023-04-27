@@ -7,6 +7,10 @@
       <sourceFolder url="file://$MODULE_DIR$/slime-ffi-rt/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/slime-ffi/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-examples/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-examples/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-test/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-test/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/slime-ffi-rt/target" />
     </content>

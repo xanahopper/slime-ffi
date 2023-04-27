@@ -3,5 +3,14 @@ members = [
     "slime-ffi-rt",
     "slime-ffi-macros",
     "slime-ffi",
-    "slime-ffi-cli"
+    "slime-ffi-cli",
+    "slime-ffi-examples",
+    "slime-ffi-test",
+]
+
+default-members = [
+    "slime-ffi-rt",
+    "slime-ffi-macros",
+    "slime-ffi",
+    "slime-ffi-cli",
 ]
