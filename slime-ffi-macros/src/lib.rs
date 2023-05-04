@@ -49,6 +49,59 @@ impl<'ast> Visit<'ast> for ModuleVisitor {
     }
 }
 
+pub mod transform {
+    use proc_macro2::TokenStream;
+    use syn::fold::Fold;
+    use syn::{Item, ItemImpl, ItemStruct, ItemTrait};
+    use crate::SlimeFfiModule;
+
+    pub enum NameType {
+        Variable,
+        Type,
+        Method,
+    }
+
+    pub trait NameTransformer {
+        fn transform_name(name_type: NameType, name: &str) -> String;
+    }
+
+    pub(crate) struct ModTransformer {
+        module: SlimeFfiModule,
+    }
+
+    impl ModTransformer {
+        pub fn new(module: SlimeFfiModule) -> Self {
+            Self { module }
+        }
+
+        // class - methods
+        pub(crate) fn transform_item_impl(&mut self, node: ItemImpl) -> TokenStream {
+            todo!()
+        }
+    }
+
+    impl Fold for ModTransformer {
+        fn fold_item(&mut self, node: Item) -> Item {
+            match node {
+                Item::Impl(i) => Item::Verbatim(self.transform_item_impl(i)),
+                Item::Trait(t) => Item::Trait(self.fold_item_trait(t)),
+                Item::Struct(s) => Item::Struct(self.fold_item_struct(s)),
+                _ => node,
+            }
+        }
+
+        // class
+        fn fold_item_struct(&mut self, node: ItemStruct) -> ItemStruct {
+            todo!()
+        }
+
+        // interface
+        fn fold_item_trait(&mut self, i: ItemTrait) -> ItemTrait {
+            todo!()
+        }
+    }
+}
+
 ///
 ///
 /// # Arguments
@@ -94,12 +147,18 @@ impl<'ast> Visit<'ast> for ModuleVisitor {
 ///         pub content: Vec<u8>
 ///     }
 ///
-///     pub struct Client;
+///     pub struct Client {
+///         agent: String,
+///         version: i32,
+///         token: u64,
+///     }
 ///
 ///     impl Client {
 ///         #[constructor]
 ///         pub fn new(agent: String, version: i32, token: u64) -> Self {
-///             Client {}
+///             Client {
+///                 agent, version, token,
+///             }
 ///         }
 ///     }
 /// }
