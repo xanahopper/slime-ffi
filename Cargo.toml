@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "slime-ffi-rt",
-    "slime-ffi-macros",
     "slime-ffi",
     "slime-ffi-cli",
     "slime-ffi-examples",
@@ -10,7 +9,6 @@ members = [
 
 default-members = [
     "slime-ffi-rt",
-    "slime-ffi-macros",
     "slime-ffi",
     "slime-ffi-cli",
 ]

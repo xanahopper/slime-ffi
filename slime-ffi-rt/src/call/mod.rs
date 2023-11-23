@@ -36,7 +36,7 @@ impl<T> CallResult<T> {
 
     pub fn error<R : Into<T>>(message: R) -> CallResult<T> {
         CallResult {
-            code: CallResult::Error.into(),
+            code: CallStatus::Error.into(),
             data: MaybeUninit::new(message.into()),
         }
     }

@@ -9,6 +9,7 @@ edition = "2021"
 slime-ffi-rt = { path = "../slime-ffi-rt" }
 variant_count = "1.1.0"
 num_enum = "0.5.4"
+syn = { version = "2.0", features = ["full"] }
 
 [features]
 jvm = ["slime-ffi-rt/jvm"]
