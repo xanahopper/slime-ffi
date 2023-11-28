@@ -9,4 +9,4 @@ edition = "2021"
 slime-ffi-rt = { path = "../slime-ffi-rt"}
 
 [build-dependencies]
-slime-ffi = { path = "../slime-ffi" }
+slime-ffi-gen = { path = "../slime-ffi-gen" }

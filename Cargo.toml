@@ -1,14 +1,17 @@
 [workspace]
 members = [
     "slime-ffi-rt",
-    "slime-ffi",
+    "slime-ffi-gen",
+    "slime-ffi-macro",
     "slime-ffi-cli",
     "slime-ffi-examples",
-    "slime-ffi-test",
+    "slime-ffi-test", "slime-ffi-macro",
 ]
 
 default-members = [
     "slime-ffi-rt",
-    "slime-ffi",
+    "slime-ffi-gen",
+    "slime-ffi-macro",
     "slime-ffi-cli",
 ]
+resolver = "2"

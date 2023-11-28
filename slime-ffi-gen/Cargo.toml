@@ -1,5 +1,5 @@
 [package]
-name = "slime-ffi"
+name = "slime-ffi-gen"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,9 +7,8 @@ edition = "2021"
 
 [dependencies]
 slime-ffi-rt = { path = "../slime-ffi-rt" }
-variant_count = "1.1.0"
-num_enum = "0.5.4"
 syn = { version = "2.0", features = ["full"] }
+serde ={ version = "1.0", features = ["derive"] }
 
 [features]
 jvm = ["slime-ffi-rt/jvm"]
