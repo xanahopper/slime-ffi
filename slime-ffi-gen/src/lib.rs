@@ -1,4 +1,4 @@
-use slime_ffi_rt::runtime::Language;
+pub use slime_ffi_rt::runtime::Language;
 
 pub mod types;
 pub mod meta;

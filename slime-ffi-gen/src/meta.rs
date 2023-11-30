@@ -5,3 +5,8 @@ pub trait Meta {
 pub struct TypeMeta {
 
 }
+
+#[cfg(test)]
+mod test {
+    
+}

@@ -11,6 +11,8 @@
       <sourceFolder url="file://$MODULE_DIR$/slime-ffi-examples/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/slime-ffi-test/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/slime-ffi-test/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-gen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/slime-ffi-macro/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/slime-ffi-rt/target" />
     </content>

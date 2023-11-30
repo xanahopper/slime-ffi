@@ -4,10 +4,8 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 #[cfg(feature = "jvm")]
 use jvm::JvmRuntime;
 use crate::runtime::common::CommonRuntime;
-use crate::runtime::dart::DartRuntime;
 
 use self::common::CommonDialectData;
-use self::dart::DartInitializeData;
 
 #[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -15,7 +13,6 @@ pub enum Language {
     C = 0,
     #[cfg(feature = "jvm")]
     Jvm = 1,
-    Dart = 2,
 }
 pub trait Runtime {
     fn initialize();
@@ -24,7 +21,6 @@ pub enum FrontendRuntime {
     C(CommonRuntime),
     #[cfg(feature = "jvm")]
     Jvm(JvmRuntime),
-    DartRuntime(DartRuntime),
 }
 
 pub mod common;
@@ -43,7 +39,6 @@ pub unsafe extern "C" fn slime_create_runtime(
             Language::C => common::create_common_runtime(library_id, &*(dialect_data as *const CommonDialectData)),
             #[cfg(feature = "jvm")]
             Language::Jvm => jvm::create_jvm_runtime(library_id, dialect_data as _),
-            Language::Dart => dart::create_dart_runtime(library_id, &*(dialect_data as *const DartInitializeData)),
         });
         Arc::into_raw(rt) as _
     } else {
