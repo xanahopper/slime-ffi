@@ -2,7 +2,7 @@ use std::iter::once;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, TokenStreamExt, ToTokens};
 use syn::{PathSegment, TypePath};
-use crate::types::{ModelItem, PrimitiveType, Type};
+use crate::types::{StructItem, PrimitiveType, Type};
 
 pub mod common;
 pub mod jvm;
@@ -47,7 +47,7 @@ impl From<&PrimitiveType> for syn::Type {
     }
 }
 
-impl ToTokens for ModelItem {
+impl ToTokens for StructItem {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let model_name = Ident::new(self.name.as_str(), Span::mixed_site());
         let c_name = Ident::new(&format!("_slm_{}", model_name), Span::mixed_site());

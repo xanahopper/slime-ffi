@@ -1,4 +1,3 @@
-use serde::{Serialize, Deserialize};
 mod transformer;
 
 mod primitive;
@@ -9,13 +8,36 @@ mod r#enum;
 
 pub use r#enum::*;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ModelItem {
+mod module;
+
+pub use module::*;
+use slime_ffi_gen::Language;
+
+use self::constants::ConstantValue;
+
+mod constants {
+    pub enum ConstantValue {
+        Int8(i8),
+        Int16(i16),
+        Int32(i32),
+        Int64(i64),
+        Uint8(u8),
+        Uint16(u16),
+        Uint32(u32),
+        Uint64(u64),
+        Bool(bool),
+        Float(f32),
+        Double(f64),
+        String(String),
+    }
+    
+}
+
+pub struct StructItem {
     pub name: String,
     pub fields: Vec<Field>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct FnItem {
     pub name: String,
     pub params: Vec<Field>,
@@ -25,30 +47,12 @@ pub struct FnItem {
 
 pub type Method = FnItem;
 
-#[derive(Debug, Serialize, Deserialize)]
 pub enum Accessor {
     Getter,
     Setter,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum ConstantValue {
-    Int8(i8),
-    Int16(i16),
-    Int32(i32),
-    Int64(i64),
-    Uint8(u8),
-    Uint16(u16),
-    Uint32(u32),
-    Uint64(u64),
-    Bool(bool),
-    Float(f32),
-    Double(f64),
-    String(String),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Property {
+pub enum Member {
     Variable(Field),
     Property {
         field: Field,
@@ -60,26 +64,18 @@ pub enum Property {
     },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AdvanceField {
-    pub property: Property,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassItem {
     pub name: String,
     pub methods: Vec<Method>,
     pub ctors: Vec<FnItem>,
-    pub fields: Vec<AdvanceField>,
+    pub fields: Vec<Member>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct InterfaceItem {
     pub name: String,
     pub methods: Vec<Method>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub enum Type {
     /* Builtin */
     Void,
@@ -89,7 +85,7 @@ pub enum Type {
 
     /* Custom */
     Enum(EnumItem),
-    Model(ModelItem),
+    Model(StructItem),
     Class(ClassItem),
     Interface(InterfaceItem),
 
@@ -102,70 +98,58 @@ pub enum Type {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Field {
     pub name: String,
     pub r#type: Type,
     pub attrs: FieldAttr,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct FieldAttr {
 
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Constant {
     pub name: String,
     pub value: ConstantValue,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct DependencyItem {
     pub extern_name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct External {
     pub r#type: ExternalItem,
     pub path: Path,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Path {
     pub segments: Vec<String>,
     pub last: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub enum ExternalItem {
     FnItem(FnItem),
-    ModelItem(ModelItem),
+    ModelItem(StructItem),
     ClassItem(ClassItem),
     InterfaceItem(InterfaceItem),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct ModItem {
     pub name: String,
     pub items: Vec<Item>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct UseItem {
     pub path: Path,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct ImplItem {
     pub class_name: String,
     pub interface_name: String,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
 pub enum Item {
     FnItem(FnItem),
-    ModelItem(ModelItem),
+    StructItem(StructItem),
     ClassItem(ClassItem),
     InterfaceItem(InterfaceItem),
     DependencyItem(DependencyItem),
@@ -175,15 +159,24 @@ pub enum Item {
     ImplItem(ImplItem),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PackageAttribute {
-    pub package_name: Option<String>,
-    pub modulemap_name: Option<String>,
+pub enum ItemAttr {
+    Ignore,
+    Rename(Language, String),
+    Comment(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum ItemAttribute {
-    Ignore,
-    Rename(String),
-    Comment(String),
+mod name {
+    use std::collections::BTreeMap;
+
+    use slime_ffi_gen::Language;
+
+    pub struct Name {
+        pub name: String,
+        pub ident: syn::Ident,
+        pub rename_attrs: BTreeMap<Language, RenameAttr>,
+    }
+
+    pub struct RenameAttr {
+        
+    }
 }

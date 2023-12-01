@@ -2,7 +2,7 @@ use std::iter::once;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{PathSegment, TypePath};
-use crate::types::{EnumItem, ModelItem, PrimitiveType, Type};
+use crate::types::{EnumItem, StructItem, PrimitiveType, Type};
 
 pub struct JvmTransformer {
 
@@ -69,7 +69,7 @@ fn generate_enum_converter(enum_type: &EnumItem) -> TokenStream {
     })
 }
 
-fn generate_model_converter(item: &ModelItem) -> TokenStream {
+fn generate_model_converter(item: &StructItem) -> TokenStream {
     let jvm_ty = generate_model_type(item);
     let ty: syn::Type = syn::parse_str(&item.name).unwrap();
     TokenStream::from(quote! {
@@ -84,7 +84,7 @@ fn generate_model_converter(item: &ModelItem) -> TokenStream {
     })
 }
 
-fn generate_model_definition(item: &ModelItem) -> TokenStream {
+fn generate_model_definition(item: &StructItem) -> TokenStream {
     let ty: syn::Type = syn::parse_str(item.name.as_str()).unwrap();
 
     TokenStream::from(quote! {
@@ -129,7 +129,7 @@ fn generate_enum_type(enum_type: &EnumItem) -> syn::Type {
     }
 }
 
-fn generate_model_type(item: &ModelItem) -> syn::Type {
+fn generate_model_type(item: &StructItem) -> syn::Type {
     syn::parse_quote!(jni::Objects::JObject<'a>)
 }
 
