@@ -39,10 +39,10 @@ fn generate_primitive_converter(primitive_type: &PrimitiveType) -> TokenStream {
     };
     TokenStream::from(quote! {
         #[cfg(feature = "jvm")]
-        impl slime_ffi_rt::TryFromWith<#jvm_ty, &slime_ffi_rt::runtime::jvm::JvmRuntime> for #ty {
+        impl slime_ffi::TryFromWith<#jvm_ty, &slime_ffi::runtime::jvm::JvmRuntime> for #ty {
             type Error = jni::errors::Error;
 
-            fn try_from_with(value: #jvm_ty, _rt: &slime_ffi_rt::runtime::jvm::JvmRuntime) -> core::result::Result<Self, Self::Error> {
+            fn try_from_with(value: #jvm_ty, _rt: &slime_ffi::runtime::jvm::JvmRuntime) -> core::result::Result<Self, Self::Error> {
                 #result_smt
             }
         }
@@ -59,10 +59,10 @@ fn generate_enum_converter(enum_type: &EnumItem) -> TokenStream {
     };
     TokenStream::from(quote! {
         #[cfg(feature = "jvm")]
-        impl<'a> slime_ffi_rt::TryFromWith<#jvm_ty, &'a slime_ffi_rt::runtime::jvm::JvmRuntime> for #ty {
+        impl<'a> slime_ffi::TryFromWith<#jvm_ty, &'a slime_ffi::runtime::jvm::JvmRuntime> for #ty {
             type Error = jni::errors::Error;
 
-            fn try_from_with(value: #jvm_ty, rt: &'a slime_ffi_rt::runtime::jvm::JvmRuntime) -> core::result::Result<Self, jni::errors::Error> {
+            fn try_from_with(value: #jvm_ty, rt: &'a slime_ffi::runtime::jvm::JvmRuntime) -> core::result::Result<Self, jni::errors::Error> {
                 #smt
             }
         }
@@ -74,11 +74,29 @@ fn generate_model_converter(item: &ModelItem) -> TokenStream {
     let ty: syn::Type = syn::parse_str(&item.name).unwrap();
     TokenStream::from(quote! {
         #[cfg(feature = "jvm")]
-        impl<'a> slime_ffi_rt::TryFromWith<#jvm_ty, &'a slime_ffi_rt::runtime::jvm::JvmRuntime> for #ty {
+        impl<'a> slime_ffi::TryFromWith<#jvm_ty, &'a slime_ffi::runtime::jvm::JvmRuntime> for #ty {
             type Error = jni::errors::Error;
 
-            fn try_from_with(value: #jvm_ty, rt: &'a slime_ffi_rt::runtime::jvm::JvmRuntime) -> core::result::Result<Self, Self::Error> {
+            fn try_from_with(value: #jvm_ty, rt: &'a slime_ffi::runtime::jvm::JvmRuntime) -> core::result::Result<Self, Self::Error> {
                 todo!()
+            }
+        }
+    })
+}
+
+fn generate_model_definition(item: &ModelItem) -> TokenStream {
+    let ty: syn::Type = syn::parse_str(item.name.as_str()).unwrap();
+
+    TokenStream::from(quote! {
+        impl slime_ffi::runtime::jvm::JvmObject for #ty {
+            fn register(env: &mut jni::JNIEnv) -> Result<slime_ffi::runtime::jvm::JvmObjectRegistry, slime_ffi::runtime::jvm::Error> {
+                // 1. get class
+                // 2. get properties
+                // 2.1 get ctor
+                // 2.2 get fields
+                // 2.3 get methods
+                // 2.4 get static fields and methods
+                // 3. generate native method
             }
         }
     })

@@ -6,7 +6,7 @@ pub trait IntoWith<T, R> {
     fn into_with(self, rt: R) -> T;
 }
 
-pub trait TryFromWith<T, R> {
+pub trait TryFromWith<T, R>: Sized {
     type Error;
 
     fn try_from_with(value: T, rt: R) -> Result<Self, Self::Error>;

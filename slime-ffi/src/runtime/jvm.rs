@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::ffi::c_void;
 use std::sync::{Arc, RwLock};
 use jni::{JavaVM, JNIEnv, NativeMethod};
-use jni::objects::{GlobalRef, JMethodID, JObject};
+use jni::objects::{GlobalRef, JFieldID, JMethodID, JObject, JStaticFieldID, JStaticMethodID};
 use jni::sys::{jint, jlong, JNI_VERSION_1_8};
 use once_cell::sync::OnceCell;
 use crate::runtime::{FrontendRuntime, Runtime};
@@ -14,28 +14,31 @@ const CALLBACK_NAME: &'static str = "com.slime.ffi.Callback";
 static JAVA_VM: OnceCell<JavaVM> = OnceCell::new();
 
 struct FieldMeta {
-
+    pub field_id: JFieldID,
 }
 
 struct MethodMeta {
-
+    pub method_id: JMethodID,
 }
 
 struct StaticFieldMeta {
-
+    pub field_id: JStaticFieldID,
 }
 
 struct StaticMethodMeta {
+    pub method_id: JStaticMethodID,
+}
 
+enum PropertyMeta {
+    Field(FieldMeta),
+    Method(MethodMeta),
+    StaticField(StaticFieldMeta),
+    StaticMethod(StaticMethodMeta),
 }
 
 struct JvmMeta {
     pub class: GlobalRef,
-    pub ctor: Option<JMethodID>,
-    pub fields: HashMap<&'static str, FieldMeta>,
-    pub methods: HashMap<&'static str, MethodMeta>,
-    pub static_fields: HashMap<&'static str, StaticFieldMeta>,
-    pub static_methods: HashMap<&'static str, StaticMethodMeta>,
+    pub properties: HashMap<&'static str, PropertyMeta>,
 }
 
 pub struct JvmNativeMeta {

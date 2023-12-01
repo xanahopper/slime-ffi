@@ -51,63 +51,63 @@ impl ToTokens for ModelItem {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let model_name = Ident::new(self.name.as_str(), Span::mixed_site());
         let c_name = Ident::new(&format!("_slm_{}", model_name), Span::mixed_site());
-        let fields: Vec<(Ident, Type)> = self.fields
-            .iter()
-            .map(|f| {
-                (
-                    Ident::new(&f.name, Span::call_site()),
-                    f.r#type.into(),
-                )
-            })
-            .collect();
-        let c_fields: Vec<(Ident, Type)> = self.fields
-            .iter()
-            .map(|f| {
-                (
-                    Ident::new(&f.name, Span::call_site()),
-                    // FIXME: replace type into c represent
-                    f.r#type.into(),
-                )
-            })
-            .collect();
-        tokens.append(quote! {
-            pub struct #model_name {
-                #(pub #fields.0: #fields.1),*
-            }
+        // let fields: Vec<(Ident, syn::Type)> = self.fields
+        //     .iter()
+        //     .map(|f| {
+        //         (
+        //             Ident::new(&f.name, Span::call_site()),
+        //             f.r#type,
+        //         )
+        //     })
+        //     .collect();
+        // let c_fields: Vec<(Ident, Type)> = self.fields
+        //     .iter()
+        //     .map(|f| {
+        //         (
+        //             Ident::new(&f.name, Span::call_site()),
+        //             // FIXME: replace type into c represent
+        //             f.r#type.clone(),
+        //         )
+        //     })
+        //     .collect();
+        // tokens.append_all(TokenStream::from(quote! {
+        //     pub struct #model_name {
+        //         #(pub #fields.0: #fields.1),*
+        //     }
 
-            #[cfg(feature = "jvm")]
-            impl<'a> slime_ffi_rt::TryFromWith<jni::objects::JObject<'a>, &'a slime_ffi_rt::runtime::jvm::JvmRuntime> for #model_name {
-                type Error = jni::errors::Error;
+        //     #[cfg(feature = "jvm")]
+        //     impl<'a> slime_ffi::TryFromWith<jni::objects::JObject<'a>, &'a slime_ffi::runtime::jvm::JvmRuntime> for #model_name {
+        //         type Error = jni::errors::Error;
 
-                fn try_from_with(value: JObject<'a>, rt: &'a slime_ffi_rt::runtime::jvm::JvmRuntime) -> Result<Self, Self::Error> {
-                    todo!()
-                }
-            }
+        //         fn try_from_with(value: JObject<'a>, rt: &'a slime_ffi::runtime::jvm::JvmRuntime) -> Result<Self, Self::Error> {
+        //             todo!()
+        //         }
+        //     }
 
-            #[cfg(feature = "jvm")]
-            impl<'a> slime_ffi_rt::TryFromWith<#model_name, &'a slime_ffi_rt::runtime::jvm::JvmRuntime> for jni::objects::JObject<'a> {
-                type Error = jni::errors::Error;
+        //     #[cfg(feature = "jvm")]
+        //     impl<'a> slime_ffi::TryFromWith<#model_name, &'a slime_ffi::runtime::jvm::JvmRuntime> for jni::objects::JObject<'a> {
+        //         type Error = jni::errors::Error;
 
-                fn try_from_with(value: #model_name, rt: &'a slime_ffi_rt::runtime::jvm::JvmRuntime) -> Result<Self, Self::Error> {
-                    todo!()
-                }
-            }
+        //         fn try_from_with(value: #model_name, rt: &'a slime_ffi::runtime::jvm::JvmRuntime) -> Result<Self, Self::Error> {
+        //             todo!()
+        //         }
+        //     }
 
-            #[cfg(feature = "common")]
-            #[repr(C)]
-            #[allow(non_snake_case)]
-            pub struct #c_name {
-                #(pub #c_fields.0: #c_fields.1),*
-            }
+        //     #[cfg(feature = "common")]
+        //     #[repr(C)]
+        //     #[allow(non_snake_case)]
+        //     pub struct #c_name {
+        //         #(pub #c_fields.0: #c_fields.1),*
+        //     }
 
-            #[cfg(feature = "common")]
-            impl slime_ffi_rt::TryFromWith<#c_name, &slime_ffi_rt::runtime::common::CommonRuntime> for #model_name {
-                type Error = ();
+        //     #[cfg(feature = "common")]
+        //     impl slime_ffi::TryFromWith<#c_name, &slime_ffi::runtime::common::CommonRuntime> for #model_name {
+        //         type Error = ();
 
-                fn try_from_with(value: #c_name, rt: &slime_ffi_rt::runtime::common::CommonRuntime) -> Result<Self, ()> {
-                    todo!()
-                }
-            }
-        });
+        //         fn try_from_with(value: #c_name, rt: &slime_ffi::runtime::common::CommonRuntime) -> Result<Self, ()> {
+        //             todo!()
+        //         }
+        //     }
+        // }));
     }
 }

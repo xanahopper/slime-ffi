@@ -26,7 +26,6 @@ pub enum FrontendRuntime {
 pub mod common;
 #[cfg(feature = "jvm")]
 pub mod jvm;
-pub mod dart;
 
 #[no_mangle]
 pub unsafe extern "C" fn slime_create_runtime(

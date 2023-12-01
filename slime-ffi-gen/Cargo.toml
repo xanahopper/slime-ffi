@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-slime-ffi-rt = { path = "../slime-ffi-rt" }
+slime-ffi = { path = "../slime-ffi" }
 syn = { version = "2.0", features = ["full"] }
 serde ={ version = "1.0", features = ["derive"] }
 
 [features]
-jvm = ["slime-ffi-rt/jvm"]
-dart = ["slime-ffi-rt/dart"]
-android = ["slime-ffi-rt/android"]
+jvm = ["slime-ffi/jvm"]
+dart = ["slime-ffi/dart"]
+android = ["slime-ffi/android"]

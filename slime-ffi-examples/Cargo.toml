@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-slime-ffi-rt = { path = "../slime-ffi-rt"}
+slime-ffi = { path = "../slime-ffi"}
 
 [build-dependencies]
 slime-ffi-gen = { path = "../slime-ffi-gen" }

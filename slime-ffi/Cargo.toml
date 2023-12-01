@@ -1,5 +1,5 @@
 [package]
-name = "slime-ffi-rt"
+name = "slime-ffi"
 version = "0.1.0"
 edition = "2021"
 authors = ["Xana Hopper <xanarust@gmail.com>"]

@@ -53,7 +53,7 @@ impl ToTokens for Transformer {
 }
 
 impl Transformer {
-    fn generate_fn_item(item: &FnItem) -> proc_macro2::TokenStream {
+    fn generate_fn_item(item: &types::FnItem) -> proc_macro2::TokenStream {
         let fn_name = Ident::new(item.name.as_str(), Span::mixed_site());
         let fun = ItemFn {
             attrs: vec![],
@@ -73,34 +73,22 @@ impl Transformer {
             },
             block: Box::new(Block { brace_token: Default::default(), stmts: vec![] }),
         };
+        todo!()
     }
 
-    fn generate_type(ty: &slime_ffi_gen::types::Type) -> Type {
-        let ty: Type = syn::parse_quote!{ () };
+    fn generate_type(ty: &types::Type) -> syn::Type {
         match ty {
-            slime_ffi_gen::types::Type::Void => syn::parse_quote!{ () },
-            slime_ffi_gen::types::Type::Primitive(ty) => match ty {
-                PrimitiveType::Int8 => todo!(),
-                PrimitiveType::Int16 => todo!(),
-                PrimitiveType::Int32 => todo!(),
-                PrimitiveType::Int64 => todo!(),
-                PrimitiveType::Uint8 => todo!(),
-                PrimitiveType::Uint16 => todo!(),
-                PrimitiveType::Uint32 => todo!(),
-                PrimitiveType::Uint64 => todo!(),
-                PrimitiveType::Bool => todo!(),
-                PrimitiveType::Float => todo!(),
-                PrimitiveType::Double => todo!(),
-            },
-            slime_ffi_gen::types::Type::String => todo!(),
-            slime_ffi_gen::types::Type::Bytes => todo!(),
-            slime_ffi_gen::types::Type::Enum(_) => todo!(),
-            slime_ffi_gen::types::Type::Model(_) => todo!(),
-            slime_ffi_gen::types::Type::Class(_) => todo!(),
-            slime_ffi_gen::types::Type::Interface(_) => todo!(),
-            slime_ffi_gen::types::Type::Option(_) => todo!(),
-            slime_ffi_gen::types::Type::List(_) => todo!(),
-            slime_ffi_gen::types::Type::Map { .. } => todo!(),
+            types::Type::Void => todo!(),
+            types::Type::Primitive(_) => todo!(),
+            types::Type::String => todo!(),
+            types::Type::Bytes => todo!(),
+            types::Type::Enum(_) => todo!(),
+            types::Type::Model(_) => todo!(),
+            types::Type::Class(_) => todo!(),
+            types::Type::Interface(_) => todo!(),
+            types::Type::Option(_) => todo!(),
+            types::Type::List(_) => todo!(),
+            types::Type::Map { key, value } => todo!(),
         }
     }
 }
