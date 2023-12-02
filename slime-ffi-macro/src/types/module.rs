@@ -2,7 +2,7 @@ use syn::{parse::{Parse, ParseStream}, ItemMod, Error, AttrStyle, ItemStruct, vi
 
 use crate::symbol::{DISPATCHER_ENABLE, PACKAGE_NAME, MODULEMAP_NAME, LIBRARY_NAME, ENTRY, Symbol, ENTRY_JVM};
 
-use super::{Item, name::Name, ItemAttr};
+use super::{Item, name::Name, ItemAttr, constants::{ConstantValue, ConstantItem}};
 
 /// An exported module, which can and only can have one in a crate.
 pub struct Module {
@@ -29,13 +29,15 @@ impl Parse for Module {
 pub struct ModuleItem {
     pub name: Name,
     pub item: Item,
+    pub attrs: Vec<ItemAttr>,
     pub original: syn::Item,
 }
 
 struct ModuleVisitor<'a> {
     pub ident: &'a Ident,
     pub attrs: Vec<Attr>,
-    pub struts: Vec<&'a ItemStruct>,
+    pub constants: Vec<ConstantItem>,
+    pub structs: Vec<&'a ItemStruct>,
 }
 
 impl<'a> Visit<'a> for ModuleVisitor<'a> {
@@ -53,6 +55,16 @@ impl<'a> Visit<'a> for ModuleVisitor<'a> {
     fn visit_attribute(&mut self, attr: &'a syn::Attribute) {
         self.attrs.push(Attr::parse_ast(&attr).unwrap())
     }
+    
+    fn visit_item_const(&mut self, const_value: &'a syn::ItemConst) {
+        let attrs: Vec<_> = const_value.attrs.iter().map(|attr| ItemAttr::parse_ast(attr).unwrap()).collect();
+        let ident = const_value.ident.clone();
+        let value = match const_value.expr.as_ref() {
+            Expr::Lit(lit) => ConstantValue::parse_ast(&lit.lit).unwrap(),
+            _ => todo!(),
+        };
+        self.constants.push(ConstantItem { name: Name::parse_ast(&ident, &attrs).unwrap(), value });
+    }
 }
 
 impl<'a> From<ModuleVisitor<'a>> for Module {
@@ -63,7 +75,7 @@ impl<'a> From<ModuleVisitor<'a>> for Module {
 
 impl<'a> ModuleVisitor<'a> {
     fn new(ident: &'a Ident) -> Self {
-        Self { ident, attrs: vec![], struts: vec![] }
+        Self { ident, attrs: vec![], structs: vec![], constants: vec![] }
     }
 }
 

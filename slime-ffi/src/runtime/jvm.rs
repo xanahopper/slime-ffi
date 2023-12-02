@@ -97,7 +97,7 @@ macro_rules! field {
 
 #[repr(C)]
 pub struct JvmInitializeData {
-
+    pub java_vm: JavaVM,
 }
 
 pub fn create_jvm_runtime(java_vm: jni::JavaVM) -> FrontendRuntime {

@@ -11,6 +11,9 @@ pub const MODULEMAP_NAME: Symbol = Symbol("modulemap_name");
 pub const LIBRARY_NAME: Symbol = Symbol("library_name");
 pub const DISPATCHER_ENABLE: Symbol = Symbol("dispatcher");
 pub const ENTRY: Symbol = Symbol("ffi_entry");
+pub const RENAME: Symbol = Symbol("rename");
+pub const IGNORE: Symbol = Symbol("ignore");
+pub const DOC: Symbol = Symbol("doc");
 
 pub const ENTRY_JVM: Symbol = Symbol("jvm");
 

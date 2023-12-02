@@ -6,16 +6,26 @@ pub use primitive::*;
 
 mod r#enum;
 
+use proc_macro2::Ident;
 pub use r#enum::*;
 
 mod module;
 
 pub use module::*;
 use slime_ffi_gen::Language;
+use syn::{Expr, ExprLit, Lit};
 
-use self::constants::ConstantValue;
+use crate::symbol::{IGNORE, RENAME, DOC};
+
+use self::constants::{ConstantValue, ConstantItem};
 
 mod constants {
+    use super::name::Name;
+
+    pub struct ConstantItem {
+        pub name: Name,
+        pub value: ConstantValue,
+    }
     pub enum ConstantValue {
         Int8(i8),
         Int16(i16),
@@ -31,6 +41,11 @@ mod constants {
         String(String),
     }
     
+    impl ConstantValue {
+        pub fn parse_ast(lit: &syn::Lit) -> syn::Result<Self> {
+            todo!()
+        }
+    }
 }
 
 pub struct StructItem {
@@ -109,7 +124,7 @@ pub struct FieldAttr {
 }
 
 pub struct Constant {
-    pub name: String,
+    pub name: Ident,
     pub value: ConstantValue,
 }
 
@@ -149,6 +164,7 @@ pub struct ImplItem {
 }
 pub enum Item {
     FnItem(FnItem),
+    ConstItem(ConstantItem),
     StructItem(StructItem),
     ClassItem(ClassItem),
     InterfaceItem(InterfaceItem),
@@ -161,22 +177,24 @@ pub enum Item {
 
 pub enum ItemAttr {
     Ignore,
-    Rename(Language, String),
     Comment(String),
+    Custom(syn::Attribute),
 }
 
-mod name {
-    use std::collections::BTreeMap;
-
-    use slime_ffi_gen::Language;
-
-    pub struct Name {
-        pub name: String,
-        pub ident: syn::Ident,
-        pub rename_attrs: BTreeMap<Language, RenameAttr>,
-    }
-
-    pub struct RenameAttr {
-        
+impl ItemAttr {
+    pub fn parse_ast(attr: &syn::Attribute) -> syn::Result<Self> {
+        match &attr.meta {
+            syn::Meta::Path(path) if path == IGNORE => Ok(ItemAttr::Ignore),
+            syn::Meta::NameValue(nv) if nv.path == DOC => if let Expr::Lit(ExprLit { lit: Lit::Str(comment), ..}) = &nv.value {
+                Ok(ItemAttr::Comment(comment.value()))
+            } else {
+                Err(syn::Error::new_spanned(nv, "Comment meets non-string value"))
+            },
+            _ => Ok(ItemAttr::Custom(attr.clone()))
+        }
     }
 }
+
+mod name;
+
+pub use name::*;
