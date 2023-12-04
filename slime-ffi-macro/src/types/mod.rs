@@ -19,34 +19,9 @@ use crate::symbol::{IGNORE, RENAME, DOC};
 
 use self::constants::{ConstantValue, ConstantItem};
 
-mod constants {
-    use super::name::Name;
+mod constants;
 
-    pub struct ConstantItem {
-        pub name: Name,
-        pub value: ConstantValue,
-    }
-    pub enum ConstantValue {
-        Int8(i8),
-        Int16(i16),
-        Int32(i32),
-        Int64(i64),
-        Uint8(u8),
-        Uint16(u16),
-        Uint32(u32),
-        Uint64(u64),
-        Bool(bool),
-        Float(f32),
-        Double(f64),
-        String(String),
-    }
-    
-    impl ConstantValue {
-        pub fn parse_ast(lit: &syn::Lit) -> syn::Result<Self> {
-            todo!()
-        }
-    }
-}
+pub use constants::*;
 
 pub struct StructItem {
     pub name: String,
@@ -121,11 +96,6 @@ pub struct Field {
 
 pub struct FieldAttr {
 
-}
-
-pub struct Constant {
-    pub name: Ident,
-    pub value: ConstantValue,
 }
 
 pub struct DependencyItem {

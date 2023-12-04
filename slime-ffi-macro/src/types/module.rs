@@ -2,7 +2,7 @@ use syn::{parse::{Parse, ParseStream}, ItemMod, Error, AttrStyle, ItemStruct, vi
 
 use crate::symbol::{DISPATCHER_ENABLE, PACKAGE_NAME, MODULEMAP_NAME, LIBRARY_NAME, ENTRY, Symbol, ENTRY_JVM};
 
-use super::{Item, name::Name, ItemAttr, constants::{ConstantValue, ConstantItem}};
+use super::{Item, name::Name, ItemAttr, constants::{ConstantValue, ConstantItem, ConstantType}};
 
 /// An exported module, which can and only can have one in a crate.
 pub struct Module {
@@ -21,7 +21,7 @@ impl Parse for Module {
         })?;
 
         let mut visitor = ModuleVisitor::new(&r#mod.ident);
-        visitor.visit_item_mod(&r#mod);
+        visitor.visit_item_mod(&r#mod)?;
         Ok(visitor.into())
     }
 }
@@ -40,30 +40,34 @@ struct ModuleVisitor<'a> {
     pub structs: Vec<&'a ItemStruct>,
 }
 
-impl<'a> Visit<'a> for ModuleVisitor<'a> {
-    fn visit_item_mod(&mut self, item_mod: &'a ItemMod) {
+impl<'a> ModuleVisitor<'a> {
+    pub fn visit_item_mod(&mut self, item_mod: &'a ItemMod) -> syn::Result<()> {
         for attr in &item_mod.attrs {
-            self.visit_attribute(attr);
+            self.visit_attribute(attr)?;
         }
         if let Some((_, items)) = &item_mod.content {
             for item in items {
-                self.visit_item(item);
+                self.visit_item(item)?;
             }
+        }
+        Ok(())
+    }
+
+    fn visit_item(&mut self, item: &'a syn::Item) -> syn::Result<()> {
+        match item {
+            syn::Item::Const(const_value) => self.visit_item_const(const_value),
+            _ => Err(Error::new_spanned(item, format!("Unsupported item"))),
         }
     }
 
-    fn visit_attribute(&mut self, attr: &'a syn::Attribute) {
-        self.attrs.push(Attr::parse_ast(&attr).unwrap())
+    fn visit_attribute(&mut self, attr: &'a syn::Attribute) -> syn::Result<()> {
+        self.attrs.push(Attr::parse_ast(&attr)?);
+        Ok(())
     }
     
-    fn visit_item_const(&mut self, const_value: &'a syn::ItemConst) {
-        let attrs: Vec<_> = const_value.attrs.iter().map(|attr| ItemAttr::parse_ast(attr).unwrap()).collect();
-        let ident = const_value.ident.clone();
-        let value = match const_value.expr.as_ref() {
-            Expr::Lit(lit) => ConstantValue::parse_ast(&lit.lit).unwrap(),
-            _ => todo!(),
-        };
-        self.constants.push(ConstantItem { name: Name::parse_ast(&ident, &attrs).unwrap(), value });
+    fn visit_item_const(&mut self, item: &'a syn::ItemConst) -> syn::Result<()> {
+        self.constants.push(ConstantItem::parse_ast(item)?);
+        Ok(())
     }
 }
 
