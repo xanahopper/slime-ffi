@@ -1,8 +1,8 @@
-use syn::{parse::{Parse, ParseStream}, ItemMod, Error, AttrStyle, ItemStruct, visit::Visit, Ident, spanned::Spanned, Lit, ExprAssign, Token, Meta, punctuated::Punctuated, Expr, ExprLit};
+use syn::{parse::{Parse, ParseStream}, ItemMod, Error, AttrStyle, ItemStruct, visit::Visit, Ident, spanned::Spanned, Lit, ExprAssign, Token, Meta, punctuated::Punctuated, Expr, ExprLit, MetaNameValue};
 
-use crate::symbol::{DISPATCHER_ENABLE, PACKAGE_NAME, MODULEMAP_NAME, LIBRARY_NAME, ENTRY, Symbol, ENTRY_JVM};
+use crate::symbol::{DISPATCHER_ENABLE, PACKAGE_NAME, MODULEMAP_NAME, LIBRARY_NAME, ENTRY, Symbol, ENTRY_JVM, ETNRY_COMMON};
 
-use super::{Item, name::Name, ItemAttr, constants::{ConstantValue, ConstantItem, ConstantType}};
+use super::{Item, name::Name, ItemAttr, constants::{ConstantValue, ConstantItem, ConstantType}, pre_parse_extern_use};
 
 /// An exported module, which can and only can have one in a crate.
 pub struct Module {
@@ -36,6 +36,7 @@ pub struct ModuleItem {
 struct ModuleVisitor<'a> {
     pub ident: &'a Ident,
     pub attrs: Vec<Attr>,
+    pub decls: Vec<&'a Ident>,
     pub constants: Vec<ConstantItem>,
     pub structs: Vec<&'a ItemStruct>,
 }
@@ -46,6 +47,19 @@ impl<'a> ModuleVisitor<'a> {
             self.visit_attribute(attr)?;
         }
         if let Some((_, items)) = &item_mod.content {
+            for item in items {
+                match item {
+                    syn::Item::Struct(struct_item) => self.decls.push(&struct_item.ident),
+                    syn::Item::Trait(trait_item) => self.decls.push(&trait_item.ident),
+                    syn::Item::Enum(enum_item) => self.decls.push(&enum_item.ident),
+                    syn::Item::Use(use_item) => if let Some(extern_use) = pre_parse_extern_use(&use_item) {
+                        self.decls.push(extern_use);
+                    }
+                    syn::Item::Mod(_) => todo!("recurive visit sub mod"),
+                    _ => (),
+                    
+                }
+            }
             for item in items {
                 self.visit_item(item)?;
             }
@@ -79,7 +93,7 @@ impl<'a> From<ModuleVisitor<'a>> for Module {
 
 impl<'a> ModuleVisitor<'a> {
     fn new(ident: &'a Ident) -> Self {
-        Self { ident, attrs: vec![], structs: vec![], constants: vec![] }
+        Self { ident, attrs: vec![], structs: vec![], constants: vec![], decls: vec![] }
     }
 }
 
@@ -148,7 +162,8 @@ impl Attr {
 }
 
 pub enum EntryAttr {
-    JvmEntry(JNIEntry),
+    JvmEntry(String),
+    CEntry(String),
 }
 
 impl Parse for EntryAttr {
@@ -156,7 +171,13 @@ impl Parse for EntryAttr {
         if let Meta::NameValue(nv)= input.parse()? {
             if nv.path == ENTRY_JVM {
                 if let Expr::Lit(ExprLit { lit: Lit::Str(entry_name), ..}) = nv.value {
-                    Ok(EntryAttr::JvmEntry(JNIEntry(entry_name.value())))
+                    Ok(EntryAttr::JvmEntry(entry_name.value()))
+                } else {
+                    Err(input.error("entry require a string value"))
+                }
+            } else if nv.path == ETNRY_COMMON {
+                if let Expr::Lit(ExprLit { lit: Lit::Str(entry_name), ..}) = nv.value {
+                    Ok(EntryAttr::CEntry(entry_name.value()))
                 } else {
                     Err(input.error("entry require a string value"))
                 }
@@ -169,13 +190,13 @@ impl Parse for EntryAttr {
     }
 }
 
-pub struct JNIEntry(pub String);
+
 
 #[cfg(test)]
 mod test {
     use syn::ItemMod;
 
-    use crate::types::{EntryAttr, JNIEntry};
+    use crate::types::EntryAttr;
 
     use super::Attr;
 
@@ -194,23 +215,26 @@ mod test {
         let raw_attrs: ItemMod = syn::parse2(content).unwrap();
         let mut has_dispatcher = false;
         for raw_attr in &raw_attrs.attrs {
-            let attr = Attr::parse_ast(raw_attr).unwrap();
-            match attr {
-                Attr::PackageName(name) => assert_eq!(name, "com.slime.ffi"),
-                Attr::ModulemapName(name) => assert_eq!(name, "SlimeFFI"),
-                Attr::LibraryName(name) => assert_eq!(name, "slime"),
-                Attr::Entry(entries) => {
-                    assert_eq!(entries.len(), 1);
-                    assert!(matches!(entries.get(0).unwrap(), EntryAttr::JvmEntry(JNIEntry(_))));
-                    match entries.get(0).unwrap() {
-                        EntryAttr::JvmEntry(JNIEntry(name)) => {
-                            assert_eq!(name, "on_jvm_loaded");
+            match Attr::parse_ast(&raw_attr) {
+                Ok(attr) => match attr {
+                    Attr::PackageName(name) => assert_eq!(name, "com.slime.ffi"),
+                    Attr::ModulemapName(name) => assert_eq!(name, "SlimeFFI"),
+                    Attr::LibraryName(name) => assert_eq!(name, "slime"),
+                    Attr::Entry(entries) => {
+                        assert_eq!(entries.len(), 1);
+                        assert!(matches!(entries.get(0).unwrap(), EntryAttr::JvmEntry(_)));
+                        match entries.get(0).unwrap() {
+                            EntryAttr::JvmEntry(name) => {
+                                assert_eq!(name, "on_jvm_loaded");
+                            }
+                            _ => panic!("unsupported!"),
                         }
-                    }
-                },
-                Attr::Dispatcher => {
-                    has_dispatcher = true
-                },
+                    },
+                    Attr::Dispatcher => {
+                        has_dispatcher = true
+                    },
+                } 
+                Err(e) => println!("{}", e),
             }
         }
         assert_eq!(has_dispatcher, true);
@@ -240,11 +264,12 @@ mod test {
                 Attr::LibraryName(name) => assert_eq!(name, "slime"),
                 Attr::Entry(entries) => {
                     assert_eq!(entries.len(), 1);
-                    assert!(matches!(entries.get(0).unwrap(), EntryAttr::JvmEntry(JNIEntry(_))));
+                    assert!(matches!(entries.get(0).unwrap(), EntryAttr::JvmEntry(_)));
                     match entries.get(0).unwrap() {
-                        EntryAttr::JvmEntry(JNIEntry(name)) => {
+                        EntryAttr::JvmEntry(name) => {
                             assert_eq!(name, "on_jvm_loaded");
                         }
+                        _ => panic!("unsupported!"),
                     }
                 },
                 Attr::Dispatcher => {

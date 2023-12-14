@@ -16,6 +16,11 @@ pub const IGNORE: Symbol = Symbol("ignore");
 pub const DOC: Symbol = Symbol("doc");
 
 pub const ENTRY_JVM: Symbol = Symbol("jvm");
+pub const ETNRY_COMMON: Symbol = Symbol("common");
+
+pub const EXTERN_CLASS: Symbol = Symbol("class");
+pub const EXTERN_MODEL: Symbol = Symbol("model");
+pub const EXTERN_INTERFACE: Symbol = Symbol("interface");
 
 impl PartialEq<Symbol> for Ident {
     fn eq(&self, other: &Symbol) -> bool {

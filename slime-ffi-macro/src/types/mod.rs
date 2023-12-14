@@ -98,25 +98,9 @@ pub struct FieldAttr {
 
 }
 
-pub struct DependencyItem {
-    pub extern_name: String,
-}
-
-pub struct External {
-    pub r#type: ExternalItem,
-    pub path: Path,
-}
-
 pub struct Path {
     pub segments: Vec<String>,
     pub last: Option<String>,
-}
-
-pub enum ExternalItem {
-    FnItem(FnItem),
-    ModelItem(StructItem),
-    ClassItem(ClassItem),
-    InterfaceItem(InterfaceItem),
 }
 
 pub struct ModItem {
@@ -144,6 +128,48 @@ pub enum Item {
     ModItem(Box<ModItem>),
     ImplItem(ImplItem),
 }
+
+mod dependency {
+    use syn::{Path, Ident};
+
+    use crate::symbol::{EXTERN_CLASS, EXTERN_MODEL, EXTERN_INTERFACE};
+
+    use super::{StructItem, ClassItem, InterfaceItem};
+
+    pub enum ExternalItem {
+        // FnItem(FnItem),
+        ModelItem(StructItem),
+        ClassItem(ClassItem),
+        InterfaceItem(InterfaceItem),
+    }
+
+    pub struct DependencyItem {
+        pub name: String,
+    }
+    
+    pub struct External {
+        pub ty: ExternalItem,
+        pub path: Path,
+    }
+
+    pub fn pre_parse_extern_use(use_item: &syn::ItemUse) -> Option<&syn::Ident> {
+        if !use_item.attrs.iter().any(|attr| match &attr.meta {
+            syn::Meta::Path(pat) => pat == EXTERN_CLASS || pat == EXTERN_MODEL || pat == EXTERN_INTERFACE,
+            _ => false,
+        }) {
+            return None;
+        }
+        match &use_item.tree {
+            syn::UseTree::Path(_) => todo!(),
+            syn::UseTree::Name(name) => Some(&name.ident),
+            syn::UseTree::Rename(_) => panic!("Rename FFI use not supported"),
+            syn::UseTree::Glob(_) => panic!("Glob FFI use not supported"),
+            syn::UseTree::Group(_) => panic!("Group FFI use not supported"),
+        }
+    }
+}
+
+pub use dependency::*;
 
 pub enum ItemAttr {
     Ignore,
