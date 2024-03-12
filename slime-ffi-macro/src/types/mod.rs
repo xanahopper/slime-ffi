@@ -6,18 +6,16 @@ pub use primitive::*;
 
 mod r#enum;
 
-use proc_macro2::Ident;
 pub use r#enum::*;
 
 mod module;
 
 pub use module::*;
-use slime_ffi_gen::Language;
 use syn::{Expr, ExprLit, Lit};
 
-use crate::symbol::{IGNORE, RENAME, DOC};
+use crate::symbol::{DOC, IGNORE, RENAME};
 
-use self::constants::{ConstantValue, ConstantItem};
+use self::constants::{ConstantItem, ConstantValue};
 
 mod constants;
 
@@ -48,7 +46,7 @@ pub enum Member {
         field: Field,
         accessors: Vec<Accessor>,
     },
-    Constant{
+    Constant {
         name: String,
         value: ConstantValue,
     },
@@ -82,10 +80,7 @@ pub enum Type {
     /* Collections */
     Option(Box<Type>),
     List(Box<Type>),
-    Map {
-        key: Box<Type>,
-        value: Box<Type>,
-    }
+    Map { key: Box<Type>, value: Box<Type> },
 }
 
 pub struct Field {
@@ -94,9 +89,7 @@ pub struct Field {
     pub attrs: FieldAttr,
 }
 
-pub struct FieldAttr {
-
-}
+pub struct FieldAttr {}
 
 pub struct Path {
     pub segments: Vec<String>,
@@ -181,12 +174,21 @@ impl ItemAttr {
     pub fn parse_ast(attr: &syn::Attribute) -> syn::Result<Self> {
         match &attr.meta {
             syn::Meta::Path(path) if path == IGNORE => Ok(ItemAttr::Ignore),
-            syn::Meta::NameValue(nv) if nv.path == DOC => if let Expr::Lit(ExprLit { lit: Lit::Str(comment), ..}) = &nv.value {
-                Ok(ItemAttr::Comment(comment.value()))
-            } else {
-                Err(syn::Error::new_spanned(nv, "Comment meets non-string value"))
-            },
-            _ => Ok(ItemAttr::Custom(attr.clone()))
+            syn::Meta::NameValue(nv) if nv.path == DOC => {
+                if let Expr::Lit(ExprLit {
+                    lit: Lit::Str(comment),
+                    ..
+                }) = &nv.value
+                {
+                    Ok(ItemAttr::Comment(comment.value()))
+                } else {
+                    Err(syn::Error::new_spanned(
+                        nv,
+                        "Comment meets non-string value",
+                    ))
+                }
+            }
+            _ => Ok(ItemAttr::Custom(attr.clone())),
         }
     }
 }

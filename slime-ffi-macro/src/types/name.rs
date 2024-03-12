@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use slime_ffi_gen::Language;
-use syn::{Expr, ExprLit, Lit, LitStr, ExprAssign, punctuated::Punctuated, Token};
+use syn::{punctuated::Punctuated, Expr, ExprAssign, ExprLit, Lit, LitStr, Token};
 
 use crate::symbol::RENAME;
 
@@ -9,19 +9,6 @@ use super::ItemAttr;
 
 /// Specify a name(Ident), in different language, such as
 /// function, struct, field, method, etc.
-/// 
-/// # Examples
-/// ```rust
-/// pub struct User {
-///     #[rename("account")]
-///     pub username: String,
-///     #[rename(
-///         jvm = "nickname",
-///         swift = "avatar"
-///     )]
-///     pub name: String,
-/// }
-/// ````
 pub struct Name {
     pub ident: syn::Ident,
     pub rename_rules: Option<RenameRules>,
@@ -29,7 +16,7 @@ pub struct Name {
 
 pub struct RenameRules {
     pub rename_all: Option<String>,
-    pub dialects: BTreeMap<Language, String>
+    pub dialects: BTreeMap<Language, String>,
 }
 
 impl Name {
@@ -41,7 +28,10 @@ impl Name {
                 if let syn::Meta::List(meta) = &raw_attr.meta {
                     if meta.path == RENAME {
                         if rename_rules.is_some() {
-                            return Err(syn::Error::new(ident.span(), "duplicate rename attribute"));
+                            return Err(syn::Error::new(
+                                ident.span(),
+                                "duplicate rename attribute",
+                            ));
                         }
                         rename_rules = Some(RenameRules::parse_ast(&meta)?);
                     }
@@ -62,28 +52,54 @@ impl RenameRules {
         let args = meta_list.parse_args_with(Punctuated::<Expr, Token![,]>::parse_terminated)?;
         for arg in args {
             match arg {
-                Expr::Lit(ExprLit { lit: Lit::Str(name), .. }) => if rename_all.is_some() {
-                    return Err(syn::Error::new_spanned(meta_list, format!("Single rename parameter require single string value")))
-                } else {
-                    rename_all = Some(name.value());
-                },
+                Expr::Lit(ExprLit {
+                    lit: Lit::Str(name),
+                    ..
+                }) => {
+                    if rename_all.is_some() {
+                        return Err(syn::Error::new_spanned(
+                            meta_list,
+                            format!("Single rename parameter require single string value"),
+                        ));
+                    } else {
+                        rename_all = Some(name.value());
+                    }
+                }
                 Expr::Assign(ExprAssign { left, right, .. }) => {
                     if let Expr::Path(path) = *left {
-                        if let Expr::Lit(ExprLit { lit: Lit::Str(name), .. }) = *right {
+                        if let Expr::Lit(ExprLit {
+                            lit: Lit::Str(name),
+                            ..
+                        }) = *right
+                        {
                             let ident = path.path.require_ident()?;
                             if let Ok(language) = Language::from_str(ident.to_string().as_str()) {
                                 dialects.insert(language, name.value());
                             } else {
-                                return Err(syn::Error::new_spanned(meta_list, format!("Unknown language: {}", ident)))
+                                return Err(syn::Error::new_spanned(
+                                    meta_list,
+                                    format!("Unknown language: {}", ident),
+                                ));
                             }
                         } else {
-                            return Err(syn::Error::new_spanned(right, format!("rename dialect value should be string value")))
+                            return Err(syn::Error::new_spanned(
+                                right,
+                                format!("rename dialect value should be string value"),
+                            ));
                         }
                     } else {
-                        return Err(syn::Error::new_spanned(left, "require a `language = \"name\"` list"));
+                        return Err(syn::Error::new_spanned(
+                            left,
+                            "require a `language = \"name\"` list",
+                        ));
                     }
                 }
-                _ => return Err(syn::Error::new_spanned(meta_list, "invalid rename attribute"))
+                _ => {
+                    return Err(syn::Error::new_spanned(
+                        meta_list,
+                        "invalid rename attribute",
+                    ))
+                }
             }
         }
         Ok(RenameRules {
@@ -113,7 +129,10 @@ mod test {
             assert_eq!(rules.rename_all, None);
             assert_eq!(rules.dialects.len(), 2);
             #[cfg(feature = "jvm")]
-            assert_eq!(rules.dialects.get(&Language::Jvm), Some(&"nickname".to_owned()));
+            assert_eq!(
+                rules.dialects.get(&Language::Jvm),
+                Some(&"nickname".to_owned())
+            );
             assert_eq!(rules.dialects.get(&Language::C), Some(&"avatar".to_owned()));
         }
     }

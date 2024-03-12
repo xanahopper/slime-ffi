@@ -10,10 +10,11 @@ edition = "2021"
 [dependencies]
 slime-ffi-gen = { path = "../slime-ffi-gen" }
 syn = { version = "2.0", features = ["full", "derive", "visit"] }
+darling = "0.20"
 quote = { version = "1.0" }
 proc-macro2 = { version = "1.0" }
 serde = "1.0"
-darling ={ version = "0.20" }
+slime-ffi = { path = "../slime-ffi" }
 
 [features]
 default = ["jvm"]
