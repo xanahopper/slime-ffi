@@ -1,4 +1,0 @@
-{
-    "rust-analyzer.diagnostics.useRustcErrorCode": true,
-    "rust-analyzer.cargo.features": ["jvm"]
-}
