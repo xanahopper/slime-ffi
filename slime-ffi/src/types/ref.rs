@@ -1,21 +1,37 @@
 use std::{any::TypeId, marker::PhantomData, ptr::NonNull};
 
-const EMPTY_VTABLE: FfiRefVTable = FfiRefVTable::C(FfiCVTable {
-    ctor: None,
-    dtor: None,
-});
-
-#[derive(Clone, Copy)]
-struct FfiCVTable {
-    pub(crate) ctor: Option<NonNull<unsafe fn(Option<NonNull<()>>) -> Option<NonNull<()>>>>,
-    pub(crate) dtor: Option<NonNull<unsafe fn(Option<NonNull<()>>)>>,
-}
-
-struct FfiRuntimeVTable<RT, M> {
+struct VTable<RT, M, N> {
     pub(crate) runtime: RT,
     pub(crate) ctor: M,
-    pub(crate) dtor: M,
+    pub(crate) dtor: N,
+    pub(crate) methods: Vec<(u32, NonNull<()>)>,
 }
+
+mod common {
+    use std::ptr::NonNull;
+
+    use super::VTable;
+
+    pub type FfiAny = Option<NonNull<()>>;
+    pub type CtorFn = unsafe fn(FfiAny) -> FfiAny;
+    pub type DtorFn = unsafe fn(FfiAny);
+
+    pub type FfiCVTable = VTable<(), CtorFn, DtorFn>;
+}
+
+pub use common::*;
+
+#[cfg(feature = "jvm")]
+mod jvm {
+    use super::VTable;
+
+    use crate::__private::jni::{objects::JMethodID, JavaVM};
+
+    pub type JavaRuntimeVTable = VTable<JavaVM, JMethodID, JMethodID>;
+}
+
+#[cfg(feature = "jvm")]
+pub use jvm::*;
 
 enum FfiRefVTable {
     C(FfiCVTable),
@@ -23,21 +39,28 @@ enum FfiRefVTable {
     Java(JavaRuntimeVTable),
 }
 
-#[cfg(feature = "jvm")]
-type JavaRuntimeVTable =
-    FfiRuntimeVTable<crate::__private::jni::JavaVM, crate::__private::jni::objects::JMethodID>;
+impl Default for FfiRefVTable {
+    fn default() -> Self {
+        FfiRefVTable::C(FfiCVTable {
+            runtime: (),
+            ctor: None,
+            dtor: None,
+            methods: vec![],
+        })
+    }
+}
 
 #[repr(C)]
 pub struct FfiRef {
     inner_ref: Option<NonNull<()>>,
-    vtable: NonNull<FfiRefVTable>,
     type_id: NonNull<TypeId>,
+    vtable: NonNull<FfiRefVTable>,
 }
 
 pub trait SlimeType {}
 
-unsafe fn ref_ty<T: 'static>() -> NonNull<TypeId> {
-    NonNull::new_unchecked(Box::into_raw(Box::new(TypeId::of::<T>())))
+fn ref_ty<T: 'static>() -> NonNull<TypeId> {
+    NonNull::new(Box::into_raw(Box::new(TypeId::of::<T>()))).unwrap()
 }
 
 impl FfiRef {
@@ -66,6 +89,7 @@ impl<T: 'static> Ref<T> {
                     _phantom: PhantomData::default(),
                 })
             } else {
+                // TODO: implement a error type
                 Err(())
             }
         }

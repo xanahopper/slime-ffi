@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::types::{Field, Type};
+use serde::{Deserialize, Serialize};
 
 pub enum EnumVariantType {
     Primitive,
@@ -19,6 +19,9 @@ pub struct EnumItem {
 
 impl EnumItem {
     pub fn is_primitive(&self) -> bool {
-        self.variants.iter().all(|v| matches!(v.variant_type, EnumVariantType::Primitive))
+        self.variants
+            .iter()
+            .all(|v| matches!(v.variant_type, EnumVariantType::Primitive))
     }
 }
+
