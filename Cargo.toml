@@ -6,6 +6,7 @@ members = [
     "slime-ffi-cli",
     "slime-ffi-examples",
     "slime-ffi-test",
+    "slime-ffi-ir",
 ]
 
 default-members = [
@@ -13,6 +14,7 @@ default-members = [
     "slime-ffi-gen",
     "slime-ffi-macro",
     "slime-ffi-cli",
+    "slime-ffi-ir",
 ]
 resolver = "2"
 
