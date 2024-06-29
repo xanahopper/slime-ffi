@@ -6,7 +6,7 @@ members = [
     "slime-ffi-cli",
     "slime-ffi-examples",
     "slime-ffi-test",
-    "slime-ffi-ir",
+    "slime-ffi-ir", "slime-ffi-codegen", "slime-ffi-ir-parser",
 ]
 
 default-members = [
