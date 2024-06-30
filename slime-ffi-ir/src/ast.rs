@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Ident(String);
 
 impl<T: ToString> From<T> for Ident {

@@ -8,8 +8,6 @@ pub enum Lang {
     Swift,
     ObjC,
     NodeJS,
-    WebJS,
-    WebTS,
-    WebAssambly,
+    Web,
     Dart,
 }

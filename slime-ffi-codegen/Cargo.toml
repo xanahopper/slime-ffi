@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 slime-ffi-ir = { path = "../slime-ffi-ir" }
+dashmap = "6.0"
